@@ -5,6 +5,9 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   compress: true,
 
+  // Lets several dev servers run side by side without fighting over `.next`.
+  distDir: process.env.NEXT_DIST_DIR || ".next",
+
   images: {
     formats: ["image/avif", "image/webp"],
   },
