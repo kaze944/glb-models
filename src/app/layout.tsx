@@ -59,7 +59,19 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="fr"
       className={`${display.variable} ${mono.variable} h-full antialiased`}
     >
+      <head>
+        {/* Scroll reveals are progressive: without JS everything stays visible. */}
+        <noscript>
+          <style>{`.reveal{opacity:1 !important;transform:none !important}`}</style>
+        </noscript>
+      </head>
       <body className="bg-background text-foreground flex min-h-full flex-col overflow-x-hidden">
+        <a
+          href="#projet"
+          className="focus-visible:ring-brand/30 sr-only focus-visible:not-sr-only focus-visible:fixed focus-visible:top-3 focus-visible:left-3 focus-visible:z-[100] focus-visible:rounded-full focus-visible:bg-white focus-visible:px-5 focus-visible:py-3 focus-visible:text-sm focus-visible:shadow-lg focus-visible:ring-4"
+        >
+          {copy.nav.cta.label}
+        </a>
         {children}
       </body>
     </html>

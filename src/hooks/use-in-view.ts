@@ -26,9 +26,12 @@ export function useInView<T extends HTMLElement = HTMLDivElement>({
     const node = ref.current;
     if (!node) return;
 
+    // Very old browsers and some in-app webviews: show everything rather
+    // than leaving the page blank. Deferred so the effect stays a
+    // subscription rather than a synchronous render trigger.
     if (typeof IntersectionObserver === "undefined") {
-      setInView(true);
-      return;
+      const id = setTimeout(() => setInView(true), 0);
+      return () => clearTimeout(id);
     }
 
     const observer = new IntersectionObserver(

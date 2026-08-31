@@ -20,8 +20,10 @@
   --color-ink-muted: var(--ink-muted);
   --color-brand: var(--brand);
   --color-brand-soft: var(--brand-soft);
+  --color-brand-strong: var(--brand-strong);
   --color-accent-warm: var(--accent-warm);
   --color-accent-warm-soft: var(--accent-warm-soft);
+  --color-accent-warm-ink: var(--accent-warm-ink);
   --color-hairline: var(--hairline);
   --color-surface: var(--surface);
   --color-surface-raised: var(--surface-raised);
@@ -69,6 +71,7 @@
   --animate-marquee: marquee 38s linear infinite;
   --animate-drift: drift 22s ease-in-out infinite alternate;
   --animate-sheen: sheen 3.2s ease-in-out infinite;
+  --animate-draw: draw 0.85s cubic-bezier(0.22, 1, 0.36, 1) 0.45s both;
 
   @keyframes rise {
     from {
@@ -113,6 +116,14 @@
       opacity: 0.75;
     }
   }
+  @keyframes draw {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
 }
 
 :root {
@@ -127,8 +138,12 @@
 
   --brand: oklch(0.53 0.2 258);
   --brand-soft: oklch(0.93 0.04 258);
+  /* Darker cobalt reserved for filled buttons so white text clears AA. */
+  --brand-strong: oklch(0.47 0.19 260);
   --accent-warm: oklch(0.7 0.18 45);
   --accent-warm-soft: oklch(0.95 0.045 60);
+  /* Warm tone dark enough to be used on real text, not just decoration. */
+  --accent-warm-ink: oklch(0.56 0.17 45);
 
   --hairline: oklch(0.92 0.005 265);
   --surface: oklch(1 0 0);
@@ -277,6 +292,58 @@
       transparent
     );
   }
+
+  /* Same rule, anchored left: used to underline section headers. */
+  .rule-left {
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      color-mix(in oklab, var(--ink) 16%, transparent),
+      transparent
+    );
+  }
+
+  /* ---- Display scale -------------------------------------------------
+     Fluid, light weights, tight tracking. One h1-sized step, two section
+     steps, so the page keeps a printed-editorial rhythm. */
+  .display-hero {
+    font-size: clamp(2.45rem, 5.6vw, 4.6rem);
+    line-height: 0.99;
+    letter-spacing: -0.045em;
+    font-weight: 450;
+  }
+
+  .display-section {
+    font-size: clamp(1.85rem, 3.5vw, 3rem);
+    line-height: 1.04;
+    letter-spacing: -0.04em;
+    font-weight: 450;
+  }
+
+  .display-sub {
+    font-size: clamp(1.25rem, 2vw, 1.6rem);
+    line-height: 1.15;
+    letter-spacing: -0.032em;
+    font-weight: 450;
+  }
+
+  .lede {
+    font-size: clamp(1rem, 1.15vw, 1.125rem);
+    line-height: 1.62;
+    letter-spacing: -0.011em;
+  }
+
+  /* Numerals: mono, tabular, tightened so big figures do not look sparse. */
+  .figure {
+    font-family: var(--font-mono-ui), ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.05em;
+    font-weight: 500;
+  }
+
+  .tnum {
+    font-variant-numeric: tabular-nums;
+  }
 }
 
 @layer utilities {
@@ -319,6 +386,86 @@
 
   .mask-fade-b {
     mask-image: linear-gradient(180deg, #000 62%, transparent);
+  }
+
+  /* Hover underline that wipes in from the left and out to the right. */
+  .link-sweep {
+    position: relative;
+  }
+
+  .link-sweep::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    bottom: -0.28em;
+    height: 1px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: right center;
+    transition: transform 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .link-sweep:hover::after,
+  .link-sweep:focus-visible::after {
+    transform: scaleX(1);
+    transform-origin: left center;
+  }
+
+  /* Hero emphasis: a hairline gradient stroke drawn under the key words. */
+  .emphasis-stroke {
+    position: relative;
+    display: inline-block;
+  }
+
+  .emphasis-stroke::after {
+    content: "";
+    position: absolute;
+    inset-inline: -0.04em;
+    bottom: 0.03em;
+    height: 0.075em;
+    border-radius: 999px;
+    background: linear-gradient(
+      90deg,
+      var(--brand) 0%,
+      color-mix(in oklab, var(--brand) 45%, var(--accent-warm)) 78%,
+      color-mix(in oklab, var(--accent-warm) 90%, transparent) 100%
+    );
+    transform-origin: left center;
+    animation: var(--animate-draw);
+  }
+
+  /* Very light vertical column guides, printed-grid feel. */
+  .grid-guides {
+    background-image: linear-gradient(
+      90deg,
+      color-mix(in oklab, var(--ink) 6%, transparent) 1px,
+      transparent 1px
+    );
+    background-size: 25% 100%;
+  }
+
+  /* Diagonal hatch used on the sole "unavailable" surfaces. */
+  .hatch {
+    background-image: repeating-linear-gradient(
+      -45deg,
+      color-mix(in oklab, var(--ink) 7%, transparent) 0 1px,
+      transparent 1px 7px
+    );
+  }
+
+  /* Very diffuse, very low shadow. Never a hard drop. */
+  .lift {
+    box-shadow:
+      0 1px 1px rgb(16 24 40 / 0.03),
+      0 10px 24px -14px rgb(16 24 40 / 0.14),
+      0 40px 72px -40px rgb(16 24 40 / 0.18);
+  }
+
+  .lift-lg {
+    box-shadow:
+      0 1px 1px rgb(16 24 40 / 0.04),
+      0 18px 40px -20px rgb(16 24 40 / 0.18),
+      0 64px 110px -56px rgb(16 24 40 / 0.28);
   }
 }
 
