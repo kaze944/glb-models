@@ -76,7 +76,7 @@ export function Hero({ overrides }: HeroProps = {}) {
               </span>
             </p>
 
-            <h1 className="display-hero mt-6 max-w-[15ch] text-balance">
+            <h1 className="display-hero mt-6 max-w-[18ch] text-balance">
               {headlineWithEmphasis(hero.headline, hero.emphasis)}
             </h1>
 
