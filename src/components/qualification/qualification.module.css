@@ -1,0 +1,285 @@
+/*
+ * Motion and layout primitives for the qualification card.
+ *
+ * Everything here is CSS-only: no animation runtime ships to the browser.
+ * `globals.css` already neutralises durations under `prefers-reduced-motion`,
+ * so animations settle on their end state instead of being skipped.
+ */
+
+/* ------------------------------------------------------------------ */
+/* Panel                                                               */
+/* ------------------------------------------------------------------ */
+
+/* Hairline of light along the top edge, brand on one side, warm on the other. */
+.panel::before {
+  content: "";
+  position: absolute;
+  inset-inline: 1.5rem;
+  top: 0;
+  height: 1px;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in oklab, var(--brand) 45%, transparent) 28%,
+    color-mix(in oklab, white 85%, transparent) 55%,
+    color-mix(in oklab, var(--accent-warm) 45%, transparent) 82%,
+    transparent
+  );
+}
+
+/*
+ * Without backdrop-filter the panel would sit as a wash of half-transparent
+ * white over the orbs, and every label would lose contrast. Fall back to an
+ * opaque surface instead.
+ */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .panel {
+    background: var(--surface);
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Scroll viewport                                                     */
+/* ------------------------------------------------------------------ */
+
+/*
+ * `--kb-overlap` is written by the form when the virtual keyboard covers part
+ * of the visual viewport, so the card shrinks instead of pushing the action
+ * bar under the keyboard.
+ */
+.viewport {
+  --cap: min(56dvh, 30rem);
+
+  max-height: max(11rem, calc(var(--cap) - var(--kb-overlap, 0px)));
+  min-height: min(24rem, max(11rem, calc(var(--cap) - var(--kb-overlap, 0px))));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklab, var(--ink) 18%, transparent) transparent;
+  -webkit-overflow-scrolling: touch;
+}
+
+.viewport::-webkit-scrollbar {
+  width: 6px;
+}
+
+.viewport::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--ink) 14%, transparent);
+}
+
+@media (min-width: 640px) {
+  .viewport {
+    --cap: 32rem;
+
+    min-height: 27rem;
+  }
+}
+
+/* Bottom fade hinting that the step keeps going under the action bar. */
+.fade {
+  height: 1.75rem;
+  margin-top: -1.75rem;
+  background: linear-gradient(
+    to top,
+    color-mix(in oklab, white 78%, transparent),
+    transparent
+  );
+}
+
+.actionBar {
+  padding-bottom: calc(0.875rem + env(safe-area-inset-bottom, 0px));
+}
+
+/* ------------------------------------------------------------------ */
+/* Step transitions                                                    */
+/* ------------------------------------------------------------------ */
+
+.step {
+  animation: step-forward 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.step[data-direction="back"] {
+  animation-name: step-back;
+}
+
+@keyframes step-forward {
+  from {
+    opacity: 0;
+    transform: translate3d(20px, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes step-back {
+  from {
+    opacity: 0;
+    transform: translate3d(-20px, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Options fade in one after the other; index comes from `--i`. */
+.stagger {
+  animation: option-in 380ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(70ms + var(--i, 0) * 45ms);
+}
+
+@keyframes option-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Option card                                                         */
+/* ------------------------------------------------------------------ */
+
+.option {
+  transition:
+    border-color 220ms ease,
+    background-color 220ms ease,
+    box-shadow 260ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (hover: hover) {
+  .option:hover {
+    transform: translate3d(0, -1px, 0);
+  }
+}
+
+.option:active {
+  transform: translate3d(0, 1px, 0);
+}
+
+/* Hand-drawn tick: the stroke draws itself once the option is picked. */
+.tick {
+  stroke-dasharray: 22;
+  stroke-dashoffset: 22;
+}
+
+.option[data-selected="true"] .tick {
+  animation: tick-draw 340ms 40ms cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}
+
+@keyframes tick-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Single ring pulse confirming the tap before the auto-advance. */
+.option[data-selected="true"]::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  border: 1px solid color-mix(in oklab, var(--brand) 55%, transparent);
+  animation: ring 620ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  pointer-events: none;
+}
+
+@keyframes ring {
+  from {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.035);
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Progress rail                                                       */
+/* ------------------------------------------------------------------ */
+
+.railFill {
+  background: linear-gradient(
+    90deg,
+    var(--brand),
+    color-mix(in oklab, var(--brand) 45%, var(--accent-warm))
+  );
+  transition: width 620ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ------------------------------------------------------------------ */
+/* Reward screen                                                       */
+/* ------------------------------------------------------------------ */
+
+.seal {
+  animation: seal-in 620ms cubic-bezier(0.34, 1.4, 0.64, 1) both;
+}
+
+@keyframes seal-in {
+  from {
+    opacity: 0;
+    transform: scale(0.82);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.sealTick {
+  stroke-dasharray: 26;
+  stroke-dashoffset: 26;
+  animation: tick-draw 520ms 260ms cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}
+
+.rise {
+  animation: option-in 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(160ms + var(--i, 0) * 80ms);
+}
+
+/* ------------------------------------------------------------------ */
+/* Fields                                                              */
+/* ------------------------------------------------------------------ */
+
+.field {
+  transition:
+    border-color 200ms ease,
+    box-shadow 200ms ease,
+    background-color 200ms ease;
+}
+
+.field:focus {
+  outline: none;
+  border-color: color-mix(in oklab, var(--brand) 60%, transparent);
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--brand) 12%, transparent);
+}
+
+.field[aria-invalid="true"] {
+  border-color: color-mix(in oklab, var(--destructive) 55%, transparent);
+}
+
+.field[aria-invalid="true"]:focus {
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--destructive) 12%, transparent);
+}
+
+/* Off-screen decoy field; only automated fillers reach it. */
+.trap {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
