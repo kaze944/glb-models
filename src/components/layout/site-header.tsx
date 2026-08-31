@@ -1,20 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { MenuIcon } from "lucide-react";
 
-import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
 import { CtaLink } from "@/components/ui/cta";
 import { Wordmark } from "@/components/layout/wordmark";
 import { copy } from "@/content/copy";
 import { cn } from "@/lib/utils";
+
+const MobileMenu = dynamic(
+  () => import("@/components/layout/mobile-menu").then((m) => m.MobileMenu),
+  { ssr: false },
+);
 
 /**
  * Sticky header that condenses once the page is scrolled.
@@ -25,6 +23,10 @@ import { cn } from "@/lib/utils";
 export function SiteHeader() {
   const [condensed, setCondensed] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [menuLoaded, setMenuLoaded] = useState(false);
+
+  // Warms the chunk on the first hint of intent so the sheet opens instantly.
+  const primeMenu = useCallback(() => setMenuLoaded(true), []);
 
   useEffect(() => {
     let last = false;
@@ -90,58 +92,25 @@ export function SiteHeader() {
             {copy.nav.cta.label}
           </CtaLink>
 
-          <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
-            <SheetTrigger
-              aria-label="Ouvrir le menu"
-              className="border-hairline text-ink hover:border-ink/25 inline-flex size-11 items-center justify-center rounded-full border bg-white/70 transition-colors lg:hidden"
-            >
-              <MenuIcon className="size-[18px]" strokeWidth={1.5} />
-            </SheetTrigger>
+          <button
+            type="button"
+            aria-label="Ouvrir le menu"
+            aria-expanded={menuOpen}
+            onPointerEnter={primeMenu}
+            onTouchStart={primeMenu}
+            onFocus={primeMenu}
+            onClick={() => {
+              setMenuLoaded(true);
+              setMenuOpen(true);
+            }}
+            className="border-hairline text-ink hover:border-ink/25 inline-flex size-11 items-center justify-center rounded-full border bg-white/70 transition-colors lg:hidden"
+          >
+            <MenuIcon className="size-[18px]" strokeWidth={1.5} />
+          </button>
 
-            <SheetContent
-              side="right"
-              className="w-[86%] gap-0 border-l-hairline bg-white sm:max-w-sm"
-            >
-              <SheetHeader className="px-6 pt-6 pb-2">
-                <SheetTitle className="sr-only">Navigation</SheetTitle>
-                <Wordmark />
-              </SheetHeader>
-
-              <nav aria-label="Navigation mobile" className="px-6 pt-4">
-                <ul className="flex flex-col">
-                  {copy.nav.links.map((link, i) => (
-                    <li key={link.href} className="border-hairline border-t">
-                      <SheetClose asChild>
-                        <a
-                          href={link.href}
-                          className="group/item flex items-baseline gap-4 py-4"
-                        >
-                          <span className="text-ink-muted font-mono text-[0.7rem] tracking-[0.14em]">
-                            {String(i + 1).padStart(2, "0")}
-                          </span>
-                          <span className="display-sub text-ink">
-                            {link.label}
-                          </span>
-                        </a>
-                      </SheetClose>
-                    </li>
-                  ))}
-                </ul>
-              </nav>
-
-              <div className="mt-auto border-t border-hairline p-6">
-                <SheetClose asChild>
-                  <CtaLink
-                    href={copy.nav.cta.href}
-                    location="mobile_menu"
-                    fullWidth
-                  >
-                    {copy.nav.cta.label}
-                  </CtaLink>
-                </SheetClose>
-              </div>
-            </SheetContent>
-          </Sheet>
+          {menuLoaded ? (
+            <MobileMenu open={menuOpen} onOpenChange={setMenuOpen} />
+          ) : null}
         </div>
       </div>
     </header>

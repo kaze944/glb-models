@@ -209,14 +209,21 @@ async function main() {
       await call("Runtime.evaluate", {
         awaitPromise: true,
         expression: `(async () => {
-          const step = window.innerHeight * 0.75;
-          const total = document.body.scrollHeight;
+          // The page sets scroll-behavior: smooth, which turns scrollTo into
+          // an animation and would leave most sections never intersecting.
+          const root = document.documentElement;
+          const previous = root.style.scrollBehavior;
+          root.style.scrollBehavior = "auto";
+
+          const step = window.innerHeight * 0.6;
+          const total = root.scrollHeight;
           for (let y = 0; y < total; y += step) {
-            window.scrollTo(0, y);
-            await new Promise((r) => setTimeout(r, 90));
+            window.scrollTo({ top: y, behavior: "instant" });
+            await new Promise((r) => setTimeout(r, 120));
           }
-          window.scrollTo(0, 0);
-          await new Promise((r) => setTimeout(r, 500));
+          window.scrollTo({ top: 0, behavior: "instant" });
+          await new Promise((r) => setTimeout(r, 600));
+          root.style.scrollBehavior = previous;
         })()`,
       });
     }

@@ -1,6 +1,5 @@
 import { Reveal } from "@/components/reveal";
 import { Eyebrow } from "@/components/sections/section-intro";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { copy } from "@/content/copy";
 import { cn } from "@/lib/utils";
 
@@ -82,11 +81,17 @@ function QuoteCard({ item, size }: { item: Item; size: "lead" | "compact" }) {
           lead && "mt-8",
         )}
       >
-        <Avatar size={lead ? "lg" : "default"}>
-          <AvatarFallback className="bg-brand-soft text-brand font-mono text-[0.72rem] tracking-[0.04em]">
-            {item.initials}
-          </AvatarFallback>
-        </Avatar>
+        {/* Initials only, so a plain element replaces the Radix avatar and
+            keeps its ~22 kB of client runtime off the landing page. */}
+        <span
+          aria-hidden
+          className={cn(
+            "bg-brand-soft text-brand flex shrink-0 items-center justify-center rounded-full font-mono tracking-[0.04em]",
+            lead ? "size-11 text-[0.8rem]" : "size-9 text-[0.72rem]",
+          )}
+        >
+          {item.initials}
+        </span>
         <span className="flex min-w-0 flex-col">
           <span className="text-ink text-[0.9rem] font-medium tracking-[-0.015em]">
             {item.author}
