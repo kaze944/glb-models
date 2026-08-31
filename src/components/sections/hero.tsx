@@ -33,8 +33,21 @@ function headlineWithEmphasis(headline: string, emphasis: string): ReactNode {
   );
 }
 
-export function Hero() {
-  const { hero } = copy;
+type HeroProps = {
+  /**
+   * Per-city overrides for paid-search landing pages. Keeping them optional
+   * means the main page stays a plain server component with no props.
+   */
+  overrides?: Partial<
+    Pick<
+      typeof copy.hero,
+      "eyebrow" | "headline" | "emphasis" | "subheadline"
+    >
+  >;
+};
+
+export function Hero({ overrides }: HeroProps = {}) {
+  const hero = overrides ? { ...copy.hero, ...overrides } : copy.hero;
 
   return (
     <section id="hero" className="relative isolate overflow-hidden">
